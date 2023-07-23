@@ -8,6 +8,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,8 +24,9 @@ public class MongodbApplication {
 		SpringApplication.run(MongodbApplication.class, args);
 	}
 
+	/*
 	@Bean
-	CommandLineRunner runner(StudentRepository repository){
+	CommandLineRunner runner(StudentRepository repository, MongoTemplate mongoTemplate){
 
 		return args -> {
 
@@ -37,10 +41,32 @@ public class MongodbApplication {
 					, BigDecimal.TEN
 					, LocalDateTime.now()
 			);
-			repository.insert(student);
+
+			//findByEmailUsingMongoTemplateAndQuery(mongoTemplate);
+
+			repository.findStudentByEmail("ahmadyazdi243@gmailcom").ifPresentOrElse(
+					s -> {
+						System.out.println("student already exists!!!");
+					},
+					() -> {
+						System.out.println("saving student");
+						repository.insert(student);
+					}
+			);
 
 		};
 
+	}
+	 */
+
+	private static void findByEmailUsingMongoTemplateAndQuery(MongoTemplate mongoTemplate) {
+		Query query = new Query();
+		query.addCriteria(Criteria.where("email").is("ahmadyazdi243@gmailcom"));
+		List<Student> students = mongoTemplate.find(query, Student.class);
+
+		if (students.size() > 0){
+			throw new IllegalStateException("found another student with this email");
+		}
 	}
 
 }
